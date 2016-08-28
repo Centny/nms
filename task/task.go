@@ -115,6 +115,7 @@ func (t *Task) run_rcs(name, addr, token string) {
 	t.rcs.Name = name
 	t.rcs.AddHFunc("tester/echo", t.EchoH)
 	t.rcs.AddToken3(token, 1)
+	h.T = t
 	var err = t.rcs.Run()
 	if err != nil {
 		log.E("Task run on addr(%v),name(%v) fail with error(%v)", addr, name, err)
@@ -147,6 +148,7 @@ func (t *Task) Stop() {
 }
 
 type TaskCCH struct {
+	T    *Task
 	Name string
 	Type string
 	H    ActionH
@@ -162,42 +164,48 @@ func NewTaskCCH(name, typ string, h ActionH) *TaskCCH {
 
 func (t *TaskCCH) OnConn(c netw.Con) bool {
 	c.SetWait(true)
-	t.H.OnAction(&nmsdb.Action{
-		Name: t.Name,
-		Code: 0,
-		Type: t.Type,
-		Sub:  "conn",
-		Attrs: util.Map{
-			"addr": c.RemoteAddr().String(),
-		},
-	}, t, c)
+	if t.T != nil && t.T.Running {
+		t.H.OnAction(&nmsdb.Action{
+			Name: t.Name,
+			Code: 0,
+			Type: t.Type,
+			Sub:  "conn",
+			Attrs: util.Map{
+				"addr": c.RemoteAddr().String(),
+			},
+		}, t, c)
+	}
 	return true
 }
 
 func (t *TaskCCH) OnDailFail(addr string, err error) {
-	t.H.OnAction(&nmsdb.Action{
-		Name: t.Name,
-		Code: 1,
-		Type: t.Type,
-		Sub:  "fail",
-		Err:  err.Error(),
-		Attrs: util.Map{
-			"addr": addr,
-		},
-	}, t, err)
+	if t.T != nil && t.T.Running {
+		t.H.OnAction(&nmsdb.Action{
+			Name: t.Name,
+			Code: 1,
+			Type: t.Type,
+			Sub:  "fail",
+			Err:  err.Error(),
+			Attrs: util.Map{
+				"addr": addr,
+			},
+		}, t, err)
+	}
 }
 
 //see ConHandler
 func (t *TaskCCH) OnClose(c netw.Con) {
-	t.H.OnAction(&nmsdb.Action{
-		Name: t.Name,
-		Code: 0,
-		Type: t.Type,
-		Sub:  "close",
-		Attrs: util.Map{
-			"addr": c.RemoteAddr().String(),
-		},
-	}, t, c)
+	if t.T != nil && t.T.Running {
+		t.H.OnAction(&nmsdb.Action{
+			Name: t.Name,
+			Code: 0,
+			Type: t.Type,
+			Sub:  "close",
+			Attrs: util.Map{
+				"addr": c.RemoteAddr().String(),
+			},
+		}, t, c)
+	}
 }
 
 //see CmdHandler
@@ -220,7 +228,6 @@ type TaskCCH_C struct {
 	Delay  time.Duration
 	Token  string
 	Runner *rc.RC_Runner_m
-	T      *Task
 	//
 	running bool
 }
