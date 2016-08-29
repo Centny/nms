@@ -10,9 +10,11 @@ import (
 	"github.com/Centny/nms/nmsapi"
 	"github.com/Centny/nms/nmsdb"
 	"github.com/Centny/nms/nmsrc"
+	"runtime"
 )
 
 func RunNMS_S(fcfg *util.Fcfg) error {
+	runtime.GOMAXPROCS(util.CPU())
 	mgo.AddDefault2(fcfg.Val2("db_con", ""))
 	err := mgo.ChkIdx(mgo.C, nmsdb.Indexes)
 	if err != nil {
@@ -40,12 +42,13 @@ func RunNMS_S(fcfg *util.Fcfg) error {
 }
 
 func RunNMS_C(fcfg *util.Fcfg) error {
+	runtime.GOMAXPROCS(util.CPU())
 	var nms_c = nmsrc.NewNMS_C(
 		fcfg.Val2("rc_con", ""), fcfg.Val2("lcid", ""),
 		fcfg.Val2("alias", ""), fcfg.Val2("rc_token", ""),
 		fcfg.Int64ValV("delay", 12000))
 	nms_c.ShowLog = true
 	nms_c.R.Start()
-	nms_c.R.Wait()
+	<-make(chan int) //wait
 	return nil
 }

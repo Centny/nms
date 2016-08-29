@@ -33,6 +33,7 @@ else
 fi
 cp *.properties $o_srv/conf
 cp nmstask/*.properties $o_srv/conf
+cp -rf www/* www
 
 ###
 if [ "$1" != "" ];then
