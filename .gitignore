@@ -6,3 +6,5 @@ coverage.json
 *.out
 
 coverage.xml
+
+build

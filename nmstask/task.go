@@ -1,4 +1,4 @@
-package task
+package nmstask
 
 import (
 	"github.com/Centny/gwf/log"
@@ -92,7 +92,8 @@ func (t *Task) run_http(name, url string, delay time.Duration) {
 	t.Running = true
 	for t.Running {
 		var res = t.RunHttp(url)
-		res.Name = name
+		res.Uri = url
+		res.Sub = "test"
 		t.H.OnAction(res)
 		time.Sleep(time.Millisecond * delay)
 	}
@@ -103,14 +104,15 @@ func (t *Task) run_down(name, url string, delay time.Duration) {
 	t.Running = true
 	for t.Running {
 		var res = t.RunDown(url)
-		res.Name = name
+		res.Uri = url
+		res.Sub = "test"
 		t.H.OnAction(res)
 		time.Sleep(time.Millisecond * delay)
 	}
 }
 
 func (t *Task) run_rcs(name, addr, token string) {
-	var h = NewTaskCCH_S(name, "rcs", t.H)
+	var h = NewTaskCCH_S(addr, "rcs", t.H)
 	t.rcs = rc.NewRC_Listener_m_j(pool.BP, addr, h)
 	t.rcs.Name = name
 	t.rcs.AddHFunc("tester/echo", t.EchoH)
@@ -125,7 +127,7 @@ func (t *Task) run_rcs(name, addr, token string) {
 }
 
 func (t *Task) run_rcc(name, con, token string, delay time.Duration) {
-	var h = NewTaskCCH_C(token, name, "rcs", t.H)
+	var h = NewTaskCCH_C(token, con, "rcs", t.H)
 	t.rcc = rc.NewRC_Runner_m_j(pool.BP, con, h)
 	t.rcc.Name = name
 	t.rcc.L.Dailer.OnDailFail = h.OnDailFail
@@ -149,14 +151,14 @@ func (t *Task) Stop() {
 
 type TaskCCH struct {
 	T    *Task
-	Name string
+	Uri  string
 	Type string
 	H    ActionH
 }
 
-func NewTaskCCH(name, typ string, h ActionH) *TaskCCH {
+func NewTaskCCH(uri, typ string, h ActionH) *TaskCCH {
 	return &TaskCCH{
-		Name: name,
+		Uri:  uri,
 		Type: typ,
 		H:    h,
 	}
@@ -166,7 +168,7 @@ func (t *TaskCCH) OnConn(c netw.Con) bool {
 	c.SetWait(true)
 	if t.T != nil && t.T.Running {
 		t.H.OnAction(&nmsdb.Action{
-			Name: t.Name,
+			Uri:  t.Uri,
 			Code: 0,
 			Type: t.Type,
 			Sub:  "conn",
@@ -181,7 +183,7 @@ func (t *TaskCCH) OnConn(c netw.Con) bool {
 func (t *TaskCCH) OnDailFail(addr string, err error) {
 	if t.T != nil && t.T.Running {
 		t.H.OnAction(&nmsdb.Action{
-			Name: t.Name,
+			Uri:  t.Uri,
 			Code: 1,
 			Type: t.Type,
 			Sub:  "fail",
@@ -197,8 +199,8 @@ func (t *TaskCCH) OnDailFail(addr string, err error) {
 func (t *TaskCCH) OnClose(c netw.Con) {
 	if t.T != nil && t.T.Running {
 		t.H.OnAction(&nmsdb.Action{
-			Name: t.Name,
-			Code: 0,
+			Uri:  t.Uri,
+			Code: 1,
 			Type: t.Type,
 			Sub:  "close",
 			Attrs: util.Map{
@@ -217,9 +219,9 @@ type TaskCCH_S struct {
 	*TaskCCH
 }
 
-func NewTaskCCH_S(name, typ string, h ActionH) *TaskCCH_S {
+func NewTaskCCH_S(uri, typ string, h ActionH) *TaskCCH_S {
 	return &TaskCCH_S{
-		TaskCCH: NewTaskCCH(name, typ, h),
+		TaskCCH: NewTaskCCH(uri, typ, h),
 	}
 }
 
@@ -232,10 +234,10 @@ type TaskCCH_C struct {
 	running bool
 }
 
-func NewTaskCCH_C(token, name, typ string, h ActionH) *TaskCCH_C {
+func NewTaskCCH_C(token, uri, typ string, h ActionH) *TaskCCH_C {
 	return &TaskCCH_C{
 		Token:   token,
-		TaskCCH: NewTaskCCH(name, typ, h),
+		TaskCCH: NewTaskCCH(uri, typ, h),
 	}
 }
 
@@ -261,7 +263,7 @@ func (t *TaskCCH_C) run_c(c netw.Con) {
 	t.running = true
 	for t.running {
 		var res = t.T.EchoSrv(t.Runner, "abc")
-		res.Name = t.Name
+		res.Uri = t.Uri
 		res.Sub = "test"
 		t.H.OnAction(res)
 		time.Sleep(t.Delay * time.Millisecond)

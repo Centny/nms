@@ -1,4 +1,4 @@
-package task
+package nmstask
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ var mv = map[string]int{}
 
 func echo(a *nmsdb.Action, args ...interface{}) {
 	fmt.Println(util.S2Json(a))
-	mv[a.Name] += 1
+	mv[a.Uri] += 1
 }
 func TestTask(t *testing.T) {
 	var fcfg = util.NewFcfg3()
@@ -26,11 +26,11 @@ func TestTask(t *testing.T) {
 	task.rcs.Close()
 	time.Sleep(time.Second * 3)
 	task.Stop()
-	if mv["loc_rcc"] < 1 {
+	if mv["127.0.0.1:2337"] < 1 {
 		t.Error("error")
 		return
 	}
-	if mv["loc_rcs"] < 1 {
+	if mv[":2337"] < 1 {
 		t.Error("error")
 		return
 	}
@@ -41,11 +41,11 @@ func TestTask(t *testing.T) {
 	task.Start(fcfg)
 	time.Sleep(time.Second * 3)
 	task.Stop()
-	if mv["baidu"] < 1 {
+	if mv["http://www.baidu.com"] < 1 {
 		t.Error("error")
 		return
 	}
-	if mv["baidu_d"] < 1 {
+	if mv["http://www.baidu.com/index.html"] < 1 {
 		t.Error("error")
 		return
 	}

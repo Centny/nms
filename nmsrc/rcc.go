@@ -9,7 +9,7 @@ import (
 	"github.com/Centny/gwf/tools/timer"
 	"github.com/Centny/gwf/util"
 	"github.com/Centny/nms/nmsdb"
-	"github.com/Centny/nms/task"
+	"github.com/Centny/nms/nmstask"
 	"sync"
 )
 
@@ -21,8 +21,9 @@ type NMS_C struct {
 	ShowLog bool
 
 	//
-	task  *task.Task
+	task  *nmstask.Task
 	cache []*nmsdb.Action
+	ready bool
 	c_lck sync.RWMutex
 	idc   uint64
 }
@@ -45,6 +46,9 @@ func (n *NMS_C) OnConn(c netw.Con) bool {
 }
 
 func (n *NMS_C) OnClose(c netw.Con) {
+	n.c_lck.Lock()
+	n.ready = false
+	n.c_lck.Unlock()
 }
 
 func (n *NMS_C) OnCmd(c netw.Cmd) int {
@@ -66,6 +70,9 @@ func (n *NMS_C) onlogin(c netw.Con) {
 		n.task = nil
 	}
 	n.StartTask()
+	n.c_lck.Lock()
+	n.ready = true
+	n.c_lck.Unlock()
 }
 
 func (n *NMS_C) StartTask() error {
@@ -80,7 +87,7 @@ func (n *NMS_C) StartTask() error {
 		log.E("NMS_C parse conf fail with error->%v ->conf:\n%v", err, cfg)
 		return err
 	}
-	n.task = task.NewTask(n)
+	n.task = nmstask.NewTask(n)
 	n.task.ShowLog = fcfg.Val2("showlog", "0") == "1"
 	err = n.task.Start(fcfg)
 	if err != nil {
@@ -91,7 +98,8 @@ func (n *NMS_C) StartTask() error {
 
 func (n *NMS_C) DoPush() {
 	n.c_lck.Lock()
-	if len(n.cache) < 1 {
+	if len(n.cache) < 1 || !n.ready {
+		n.c_lck.Unlock()
 		return
 	}
 	var cache = n.cache[0:]

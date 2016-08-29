@@ -1,4 +1,4 @@
-package task
+package nmstask
 
 import (
 	"github.com/Centny/gwf/log"

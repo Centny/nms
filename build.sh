@@ -25,6 +25,7 @@ pkgs="\
 # pkgs="\
 # github.com/Centny/nms/task\
 # github.com/Centny/nms/nmsrc\
+# github.com/Centny/nms/nmsdb\
 # "
 echo "mode: set" > a.out
 for p in $pkgs;

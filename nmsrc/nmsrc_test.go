@@ -9,7 +9,7 @@ import (
 )
 
 func TestRc(t *testing.T) {
-	var nms_s = NewNMS_S(":8323", "../task", "abc")
+	var nms_s = NewNMS_S(":8323", "../nmstask", "abc")
 	var err = nms_s.L.Run()
 	if err != nil {
 		t.Error(err.Error())
