@@ -88,19 +88,6 @@ func ListAction(a *Action) (as []*Action, err error) {
 	return
 }
 
-func count_ms2m_node(ms []util.Map) util.Map {
-	var res = util.Map{}
-	for _, m := range ms {
-		var node = res.MapVal(m.StrVal("uri"))
-		if node == nil {
-			node = util.Map{}
-		}
-		node[m.StrVal("nid")] = m
-		res[m.StrVal("uri")] = node
-	}
-	return res
-}
-
 func count_ms2m_sub(ms []util.Map) util.Map {
 	var res = util.Map{}
 	for _, m := range ms {
@@ -156,7 +143,9 @@ func CountActionAvg(beg int64) (util.Map, error) {
 				"uri": "$_id.uri",
 				"nid": "$_id.nid",
 				"sub": "$_id.sub",
-				"avg": "$avg",
+				"avg": bson.M{
+					"$ceil": "$avg",
+				},
 				"min": "$min",
 				"max": "$max",
 				"len": "$len",

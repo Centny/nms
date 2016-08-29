@@ -44,5 +44,5 @@ func TestApi(t *testing.T) {
 	ts.Mux.ShowLog = true
 	Hand("", ts.Mux)
 	fmt.Println(ts.G(""))
-	fmt.Printf(ts.G("/task.html?uri=%v", "http://www.baidu.com"))
+	fmt.Println(ts.G("/task.html?uri=%v", "http://www.baidu.com"))
 }
