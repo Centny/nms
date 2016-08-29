@@ -175,6 +175,7 @@ func (t *TaskCCH) OnConn(c netw.Con) bool {
 			Attrs: util.Map{
 				"addr": c.RemoteAddr().String(),
 			},
+			Time: util.Now(),
 		}, t, c)
 	}
 	return true
@@ -191,6 +192,7 @@ func (t *TaskCCH) OnDailFail(addr string, err error) {
 			Attrs: util.Map{
 				"addr": addr,
 			},
+			Time: util.Now(),
 		}, t, err)
 	}
 }
@@ -206,6 +208,7 @@ func (t *TaskCCH) OnClose(c netw.Con) {
 			Attrs: util.Map{
 				"addr": c.RemoteAddr().String(),
 			},
+			Time: util.Now(),
 		}, t, c)
 	}
 }
