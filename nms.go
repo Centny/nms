@@ -15,6 +15,7 @@ import (
 
 func RunNMS_S(fcfg *util.Fcfg) error {
 	runtime.GOMAXPROCS(util.CPU())
+	log.RedirectV(fcfg.Val2("out_l", ""), fcfg.Val2("err_l", ""), false)
 	mgo.AddDefault2(fcfg.Val2("db_con", ""))
 	err := mgo.ChkIdx(mgo.C, nmsdb.Indexes)
 	if err != nil {
@@ -43,6 +44,7 @@ func RunNMS_S(fcfg *util.Fcfg) error {
 
 func RunNMS_C(fcfg *util.Fcfg) error {
 	runtime.GOMAXPROCS(util.CPU())
+	log.RedirectV(fcfg.Val2("out_l", ""), fcfg.Val2("err_l", ""), false)
 	var nms_c = nmsrc.NewNMS_C(
 		fcfg.Val2("rc_con", ""), fcfg.Val2("lcid", ""),
 		fcfg.Val2("alias", ""), fcfg.Val2("rc_token", ""),
