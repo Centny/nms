@@ -6,13 +6,14 @@
 	<style type="text/css">
 		td{
 			text-align: center;
+			padding: 5px;
 		}
 	</style>
 </head>
 <body>
 	<div>节点数:1&nbsp;任务数:2&nbsp;</div>
 	<div>
-	<table border="1" bordercolor="gray" cellpadding="0" cellspacing="0">
+	<table style="font-size:13px" border="1" bordercolor="gray" cellpadding="0" cellspacing="0">
 		<tr>
 			<td rowspan="2">任务/节点</td>
 			{{range $.nodes}}
@@ -43,7 +44,7 @@
 			<td>{{strvalp $val .Id "test" "avg" }}</td>
 			<td>{{strvalp $val .Id "test" "max" }}</td>
 			{{end}}
-			<td>{{$key}}</td>
+			<td style="text-align:left;">{{$key}}</td>
 		</tr>
 		{{end}}
 	</table>
