@@ -55,7 +55,7 @@ func ListNodeAction(nid string) (as []*Action, err error) {
 	return
 }
 
-func ListAction(a *Action) (as []*Action, err error) {
+func ListAction(a *Action, pn, ps int) (as []*Action, err error) {
 	var query = bson.M{}
 	if len(a.Nid) > 0 {
 		query["nid"] = a.Nid
@@ -84,7 +84,7 @@ func ListAction(a *Action) (as []*Action, err error) {
 	for k, v := range a.Attrs {
 		query["attrs."+k] = v
 	}
-	err = C(CN_ACTION).Find(query).All(&as)
+	err = C(CN_ACTION).Find(query).Sort("-time").Skip(pn * ps).Limit(ps).All(&as)
 	return
 }
 

@@ -99,6 +99,7 @@ var index_fm = template.FuncMap{
 
 func TaskHtml(hs *routing.HTTPSession) routing.HResult {
 	var act = &nmsdb.Action{}
+	var pn, ps = 0, 50
 	var err = hs.ValidCheckVal(`
 		nid,O|S,L:0;
 		uri,R|S,L:0;
@@ -106,7 +107,9 @@ func TaskHtml(hs *routing.HTTPSession) routing.HResult {
 		code,O|I,R:-999;
 		used,O|I,R:0;
 		beg,O|I,R:0;
-		`, &act.Nid, &act.Uri, &act.Sub, &act.Code, &act.Used, &act.Time)
+		pn,O|I,R:-1;
+		ps,O|I,R:0;
+		`, &act.Nid, &act.Uri, &act.Sub, &act.Code, &act.Used, &act.Time, &pn, &ps)
 	if err != nil {
 		return hs.Printf("%v", err)
 	}
@@ -115,7 +118,7 @@ func TaskHtml(hs *routing.HTTPSession) routing.HResult {
 		log.E("TaskHtml list node fail with error(%v)", err)
 		return hs.Printf("%v", err)
 	}
-	actions, err := nmsdb.ListAction(act)
+	actions, err := nmsdb.ListAction(act, pn, ps)
 	if err != nil {
 		log.E("TaskHtml list action by action(%v) fail with error(%v)", util.S2Json(act), err)
 		return hs.Printf("%v", err)
